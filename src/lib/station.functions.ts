@@ -143,7 +143,7 @@ export const recordDelivery = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase.rpc("record_delivery", {
       _liters: data.liters,
-      _cost: data.cost ?? null,
+      _cost: (data.cost ?? 0) as number,
       _supplier: data.supplier,
     });
     if (error) throw new Error(error.message);
