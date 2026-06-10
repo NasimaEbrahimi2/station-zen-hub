@@ -14,16 +14,333 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          id: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      pumps: {
+        Row: {
+          capacity: number
+          created_at: string
+          current_volume: number
+          id: string
+          pump_number: number
+          total_revenue: number
+          total_sold: number
+        }
+        Insert: {
+          capacity?: number
+          created_at?: string
+          current_volume?: number
+          id?: string
+          pump_number: number
+          total_revenue?: number
+          total_sold?: number
+        }
+        Update: {
+          capacity?: number
+          created_at?: string
+          current_volume?: number
+          id?: string
+          pump_number?: number
+          total_revenue?: number
+          total_sold?: number
+        }
+        Relationships: []
+      }
+      refills: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          liters: number
+          pump_after: number
+          pump_before: number
+          pump_id: string
+          tank_after: number
+          tank_before: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          liters: number
+          pump_after: number
+          pump_before: number
+          pump_id: string
+          tank_after: number
+          tank_before: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          liters?: number
+          pump_after?: number
+          pump_before?: number
+          pump_id?: string
+          tank_after?: number
+          tank_before?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "refills_pump_id_fkey"
+            columns: ["pump_id"]
+            isOneToOne: false
+            referencedRelation: "pumps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          customer_name: string | null
+          id: string
+          invoice_no: string
+          liters: number
+          price_per_liter: number
+          pump_after: number
+          pump_before: number
+          pump_id: string
+          pump_number: number
+          total: number
+          vehicle_plate: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          customer_name?: string | null
+          id?: string
+          invoice_no?: string
+          liters: number
+          price_per_liter: number
+          pump_after: number
+          pump_before: number
+          pump_id: string
+          pump_number: number
+          total: number
+          vehicle_plate?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          customer_name?: string | null
+          id?: string
+          invoice_no?: string
+          liters?: number
+          price_per_liter?: number
+          pump_after?: number
+          pump_before?: number
+          pump_id?: string
+          pump_number?: number
+          total?: number
+          vehicle_plate?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_pump_id_fkey"
+            columns: ["pump_id"]
+            isOneToOne: false
+            referencedRelation: "pumps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      station_config: {
+        Row: {
+          currency: string
+          fuel_price: number
+          id: number
+          station_name: string
+          tank_capacity: number
+          updated_at: string
+        }
+        Insert: {
+          currency?: string
+          fuel_price?: number
+          id?: number
+          station_name?: string
+          tank_capacity?: number
+          updated_at?: string
+        }
+        Update: {
+          currency?: string
+          fuel_price?: number
+          id?: number
+          station_name?: string
+          tank_capacity?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tank: {
+        Row: {
+          current_volume: number
+          id: number
+          updated_at: string
+        }
+        Insert: {
+          current_volume?: number
+          id?: number
+          updated_at?: string
+        }
+        Update: {
+          current_volume?: number
+          id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tank_deliveries: {
+        Row: {
+          cost: number | null
+          created_at: string
+          created_by: string | null
+          id: string
+          liters: number
+          new_volume: number
+          previous_volume: number
+          supplier: string | null
+        }
+        Insert: {
+          cost?: number | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          liters: number
+          new_volume: number
+          previous_volume: number
+          supplier?: string | null
+        }
+        Update: {
+          cost?: number | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          liters?: number
+          new_volume?: number
+          previous_volume?: number
+          supplier?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      record_delivery: {
+        Args: { _cost: number; _liters: number; _supplier: string }
+        Returns: {
+          cost: number | null
+          created_at: string
+          created_by: string | null
+          id: string
+          liters: number
+          new_volume: number
+          previous_volume: number
+          supplier: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "tank_deliveries"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      record_refill: {
+        Args: { _liters: number; _pump_id: string }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          id: string
+          liters: number
+          pump_after: number
+          pump_before: number
+          pump_id: string
+          tank_after: number
+          tank_before: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "refills"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      record_sale: {
+        Args: {
+          _customer_name: string
+          _liters: number
+          _pump_id: string
+          _vehicle_plate: string
+        }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          customer_name: string | null
+          id: string
+          invoice_no: string
+          liters: number
+          price_per_liter: number
+          pump_after: number
+          pump_before: number
+          pump_id: string
+          pump_number: number
+          total: number
+          vehicle_plate: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "sales"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "staff"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +467,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "staff"],
+    },
   },
 } as const
