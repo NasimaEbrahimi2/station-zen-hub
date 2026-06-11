@@ -23,6 +23,7 @@ function InvoicePage() {
   const s: any = q.data.sale;
   const cfg: any = q.data.config;
   const currency = cfg?.currency ?? "USD";
+  const fuelType = s.fuel_type ?? cfg?.fuel_type ?? "Fuel";
 
   return (
     <div className="p-4 md:p-8 max-w-3xl space-y-4">
@@ -44,11 +45,11 @@ function InvoicePage() {
               </div>
               <div>
                 <p className="text-xl font-semibold">{cfg?.station_name ?? "Fuel Station"}</p>
-                <p className="text-xs text-muted-foreground">Fuel sale receipt</p>
+                <p className="text-xs text-muted-foreground">Sales Invoice / فاکتور فروش</p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground">Invoice</p>
+              <p className="text-xs uppercase tracking-wider text-muted-foreground">Invoice No.</p>
               <p className="font-mono tabular text-lg">{s.invoice_no}</p>
               <p className="text-xs text-muted-foreground mt-1">{fmtDateTime(s.created_at)}</p>
             </div>
@@ -56,28 +57,37 @@ function InvoicePage() {
 
           <div className="grid grid-cols-2 gap-6 mb-8 text-sm">
             <div>
-              <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Customer</p>
+              <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Customer / مشتری</p>
               <p className="font-medium">{s.customer_name ?? "Walk-in"}</p>
               {s.vehicle_plate && <p className="text-muted-foreground text-xs mt-0.5">Plate: {s.vehicle_plate}</p>}
             </div>
             <div className="text-right">
               <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Pump</p>
               <p className="font-medium">Pump {s.pump_number}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Fuel type: {fuelType}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Sales Operator / فروشنده</p>
+              <p className="font-medium">{s.operator_name ?? "—"}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Date</p>
+              <p className="font-medium">{new Date(s.created_at).toLocaleDateString()}</p>
             </div>
           </div>
 
           <table className="w-full text-sm mb-8">
             <thead className="border-b border-border text-muted-foreground">
               <tr>
-                <th className="text-left py-2">Description</th>
-                <th className="text-right py-2">Qty</th>
+                <th className="text-left py-2">Fuel Type</th>
+                <th className="text-right py-2">Quantity (L)</th>
                 <th className="text-right py-2">Price / L</th>
-                <th className="text-right py-2">Amount</th>
+                <th className="text-right py-2">Total Amount</th>
               </tr>
             </thead>
             <tbody>
               <tr className="border-b border-border/50">
-                <td className="py-3">Fuel dispensed (Pump {s.pump_number})</td>
+                <td className="py-3">{fuelType} · Pump {s.pump_number}</td>
                 <td className="text-right font-mono tabular">{fmtLiters(Number(s.liters))}</td>
                 <td className="text-right font-mono tabular">{fmtMoney(Number(s.price_per_liter), currency)}</td>
                 <td className="text-right font-mono tabular">{fmtMoney(Number(s.total), currency)}</td>
@@ -86,10 +96,10 @@ function InvoicePage() {
           </table>
 
           <div className="flex justify-end">
-            <div className="w-64 space-y-2 text-sm">
+            <div className="w-72 space-y-2 text-sm">
               <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span className="font-mono tabular">{fmtMoney(Number(s.total), currency)}</span></div>
               <div className="flex justify-between border-t border-border pt-2">
-                <span className="font-semibold">Total</span>
+                <span className="font-semibold">Grand Total / مجموع کل</span>
                 <span className="text-xl font-semibold font-mono tabular text-primary">{fmtMoney(Number(s.total), currency)}</span>
               </div>
             </div>

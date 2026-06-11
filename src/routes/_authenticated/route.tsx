@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, Link, useRouterState } from "@tanstack/react-router";
-import { Fuel, LayoutDashboard, Receipt, Fuel as PumpIcon, Truck, BarChart3, Settings, FileText } from "lucide-react";
+import { Fuel, LayoutDashboard, Receipt, Fuel as PumpIcon, Truck, BarChart3, Settings, FileText, Users, UserCog } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -10,7 +10,9 @@ const NAV = [
   { to: "/dashboard", label: "Dashboard", fa: "داشبورد", icon: LayoutDashboard },
   { to: "/sale", label: "New Sale", fa: "فروش جدید", icon: Receipt },
   { to: "/pumps", label: "Pumps", fa: "پمپ‌ها", icon: PumpIcon },
-  { to: "/inventory", label: "Inventory", fa: "موجودی", icon: Truck },
+  { to: "/inventory", label: "Inventory / Purchases", fa: "خرید سوخت", icon: Truck },
+  { to: "/customers", label: "Customers", fa: "مشتریان", icon: Users },
+  { to: "/employees", label: "Employees", fa: "کارمندان", icon: UserCog },
   { to: "/reports", label: "Reports", fa: "گزارش‌ها", icon: BarChart3 },
   { to: "/invoices", label: "Invoices", fa: "فاکتورها", icon: FileText },
   { to: "/settings", label: "Settings", fa: "تنظیمات", icon: Settings },
