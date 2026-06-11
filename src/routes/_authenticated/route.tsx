@@ -7,32 +7,33 @@ export const Route = createFileRoute("/_authenticated")({
 });
 
 const NAV = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/sale", label: "New Sale", icon: Receipt },
-  { to: "/pumps", label: "Pumps", icon: PumpIcon },
-  { to: "/inventory", label: "Inventory", icon: Truck },
-  { to: "/reports", label: "Reports", icon: BarChart3 },
-  { to: "/invoices", label: "Invoices", icon: FileText },
-  { to: "/settings", label: "Settings", icon: Settings },
+  { to: "/dashboard", label: "Dashboard", fa: "داشبورد", icon: LayoutDashboard },
+  { to: "/sale", label: "New Sale", fa: "فروش جدید", icon: Receipt },
+  { to: "/pumps", label: "Pumps", fa: "پمپ‌ها", icon: PumpIcon },
+  { to: "/inventory", label: "Inventory", fa: "موجودی", icon: Truck },
+  { to: "/reports", label: "Reports", fa: "گزارش‌ها", icon: BarChart3 },
+  { to: "/invoices", label: "Invoices", fa: "فاکتورها", icon: FileText },
+  { to: "/settings", label: "Settings", fa: "تنظیمات", icon: Settings },
 ] as const;
 
 function Layout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const company = typeof window !== "undefined" ? localStorage.getItem("company_name") : null;
 
   return (
     <div className="min-h-screen flex">
-      <aside className="hidden md:flex w-60 shrink-0 flex-col bg-sidebar border-r border-sidebar-border">
+      <aside className="hidden md:flex w-64 shrink-0 flex-col bg-sidebar border-r border-sidebar-border">
         <div className="px-5 py-5 flex items-center gap-2 border-b border-sidebar-border">
           <div className="size-9 rounded-md bg-primary grid place-items-center">
             <Fuel className="size-4 text-primary-foreground" />
           </div>
-          <div>
-            <p className="font-semibold tracking-tight leading-none">PumpOps</p>
-            <p className="text-[11px] text-muted-foreground mt-1">Station Console</p>
+          <div className="min-w-0">
+            <p className="font-semibold tracking-tight leading-none truncate">{company || "PumpOps"}</p>
+            <p className="text-[11px] text-muted-foreground mt-1">Station Console / کنسول جایگاه</p>
           </div>
         </div>
         <nav className="flex-1 p-3 space-y-1">
-          {NAV.map(({ to, label, icon: Icon }) => {
+          {NAV.map(({ to, label, fa, icon: Icon }) => {
             const active = pathname === to || pathname.startsWith(to + "/");
             return (
               <Link
@@ -44,8 +45,9 @@ function Layout() {
                     : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
                 }`}
               >
-                <Icon className="size-4" />
-                {label}
+                <Icon className="size-4 shrink-0" />
+                <span className="flex-1">{label}</span>
+                <span className="text-[11px] opacity-70" dir="rtl">{fa}</span>
               </Link>
             );
           })}
@@ -57,12 +59,12 @@ function Layout() {
             <div className="size-8 rounded-md bg-primary grid place-items-center">
               <Fuel className="size-4 text-primary-foreground" />
             </div>
-            <span className="font-semibold">PumpOps</span>
+            <span className="font-semibold truncate">{company || "PumpOps"}</span>
           </div>
         </div>
         <div className="md:hidden overflow-x-auto border-b border-border bg-sidebar">
           <div className="flex gap-1 p-2 min-w-max">
-            {NAV.map(({ to, label, icon: Icon }) => {
+            {NAV.map(({ to, label, fa, icon: Icon }) => {
               const active = pathname === to || pathname.startsWith(to + "/");
               return (
                 <Link
@@ -73,7 +75,7 @@ function Layout() {
                   }`}
                 >
                   <Icon className="size-3.5" />
-                  {label}
+                  {label} <span dir="rtl" className="opacity-70">/ {fa}</span>
                 </Link>
               );
             })}
