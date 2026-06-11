@@ -1,12 +1,10 @@
 /**
  * Server fns for the fuel station system.
- * Client-safe path: routes/components import these via useServerFn.
+ * Auth removed — admin client used so all routes are public.
  */
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
-// ---------- Schemas ----------
 const saleSchema = z.object({
   pump_id: z.string().uuid(),
   liters: z.number().positive().max(10000),
@@ -29,93 +27,83 @@ const configSchema = z.object({
   currency: z.string().trim().min(1).max(8),
 });
 
+async function admin() {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  return supabaseAdmin;
+}
+
 // ---------- Reads ----------
-export const getOverview = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { supabase } = context;
-    const [cfg, tank, pumps, roles] = await Promise.all([
-      supabase.from("station_config").select("*").eq("id", 1).single(),
-      supabase.from("tank").select("*").eq("id", 1).single(),
-      supabase.from("pumps").select("*").order("pump_number"),
-      supabase.from("user_roles").select("role").eq("user_id", context.userId),
-    ]);
-    return {
-      config: cfg.data,
-      tank: tank.data,
-      pumps: pumps.data ?? [],
-      roles: (roles.data ?? []).map((r) => r.role),
-      userId: context.userId,
-    };
-  });
+export const getOverview = createServerFn({ method: "GET" }).handler(async () => {
+  const supabase = await admin();
+  const [cfg, tank, pumps] = await Promise.all([
+    supabase.from("station_config").select("*").eq("id", 1).single(),
+    supabase.from("tank").select("*").eq("id", 1).single(),
+    supabase.from("pumps").select("*").order("pump_number"),
+  ]);
+  return {
+    config: cfg.data,
+    tank: tank.data,
+    pumps: pumps.data ?? [],
+    roles: ["admin"],
+    userId: null as string | null,
+  };
+});
 
 export const getRecentSales = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((d: { limit?: number }) => d ?? {})
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data }) => {
+    const supabase = await admin();
     const limit = Math.min(data.limit ?? 25, 200);
-    const { data: rows, error } = await context.supabase
-      .from("sales")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(limit);
+    const { data: rows, error } = await supabase
+      .from("sales").select("*").order("created_at", { ascending: false }).limit(limit);
     if (error) throw error;
     return rows ?? [];
   });
 
 export const getSalesInRange = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((d: { from: string; to: string }) => d)
-  .handler(async ({ data, context }) => {
-    const { data: rows, error } = await context.supabase
-      .from("sales")
-      .select("*")
-      .gte("created_at", data.from)
-      .lte("created_at", data.to)
+  .handler(async ({ data }) => {
+    const supabase = await admin();
+    const { data: rows, error } = await supabase
+      .from("sales").select("*")
+      .gte("created_at", data.from).lte("created_at", data.to)
       .order("created_at", { ascending: false });
     if (error) throw error;
     return rows ?? [];
   });
 
 export const getSale = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((d: { id: string }) => d)
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data }) => {
+    const supabase = await admin();
     const [{ data: sale }, { data: cfg }] = await Promise.all([
-      context.supabase.from("sales").select("*").eq("id", data.id).single(),
-      context.supabase.from("station_config").select("*").eq("id", 1).single(),
+      supabase.from("sales").select("*").eq("id", data.id).single(),
+      supabase.from("station_config").select("*").eq("id", 1).single(),
     ]);
     return { sale, config: cfg };
   });
 
-export const getRefills = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { data } = await context.supabase
-      .from("refills")
-      .select("*, pumps(pump_number)")
-      .order("created_at", { ascending: false })
-      .limit(100);
-    return data ?? [];
-  });
+export const getRefills = createServerFn({ method: "GET" }).handler(async () => {
+  const supabase = await admin();
+  const { data } = await supabase.from("refills")
+    .select("*, pumps(pump_number)")
+    .order("created_at", { ascending: false }).limit(100);
+  return data ?? [];
+});
 
-export const getDeliveries = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { data } = await context.supabase
-      .from("tank_deliveries")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(100);
-    return data ?? [];
-  });
+export const getDeliveries = createServerFn({ method: "GET" }).handler(async () => {
+  const supabase = await admin();
+  const { data } = await supabase.from("tank_deliveries")
+    .select("*").order("created_at", { ascending: false }).limit(100);
+  return data ?? [];
+});
 
 // ---------- Writes ----------
 export const recordSale = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => saleSchema.parse(d))
-  .handler(async ({ data, context }) => {
-    const { data: row, error } = await context.supabase.rpc("record_sale", {
+  .handler(async ({ data }) => {
+    const supabase = await admin();
+    const { data: row, error } = await supabase.rpc("record_sale", {
       _pump_id: data.pump_id,
       _liters: data.liters,
       _customer_name: data.customer_name,
@@ -126,10 +114,10 @@ export const recordSale = createServerFn({ method: "POST" })
   });
 
 export const recordRefill = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => refillSchema.parse(d))
-  .handler(async ({ data, context }) => {
-    const { data: row, error } = await context.supabase.rpc("record_refill", {
+  .handler(async ({ data }) => {
+    const supabase = await admin();
+    const { data: row, error } = await supabase.rpc("record_refill", {
       _pump_id: data.pump_id,
       _liters: data.liters,
     });
@@ -138,10 +126,10 @@ export const recordRefill = createServerFn({ method: "POST" })
   });
 
 export const recordDelivery = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => deliverySchema.parse(d))
-  .handler(async ({ data, context }) => {
-    const { data: row, error } = await context.supabase.rpc("record_delivery", {
+  .handler(async ({ data }) => {
+    const supabase = await admin();
+    const { data: row, error } = await supabase.rpc("record_delivery", {
       _liters: data.liters,
       _cost: (data.cost ?? 0) as number,
       _supplier: data.supplier,
@@ -151,13 +139,11 @@ export const recordDelivery = createServerFn({ method: "POST" })
   });
 
 export const updateConfig = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => configSchema.parse(d))
-  .handler(async ({ data, context }) => {
-    const { error } = await context.supabase
-      .from("station_config")
-      .update({ ...data, updated_at: new Date().toISOString() })
-      .eq("id", 1);
+  .handler(async ({ data }) => {
+    const supabase = await admin();
+    const { error } = await supabase.from("station_config")
+      .update({ ...data, updated_at: new Date().toISOString() }).eq("id", 1);
     if (error) throw new Error(error.message);
     return { ok: true };
   });

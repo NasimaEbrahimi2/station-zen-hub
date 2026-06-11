@@ -1,16 +1,8 @@
-import { createFileRoute, Outlet, redirect, Link, useRouter, useRouterState } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
-import { Fuel, LayoutDashboard, Receipt, Fuel as PumpIcon, Truck, BarChart3, Settings, LogOut, FileText } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, Outlet, Link, useRouterState } from "@tanstack/react-router";
+import { Fuel, LayoutDashboard, Receipt, Fuel as PumpIcon, Truck, BarChart3, Settings, FileText } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
-  beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/auth" });
-    return { user: data.user };
-  },
   component: Layout,
 });
 
@@ -25,16 +17,7 @@ const NAV = [
 ] as const;
 
 function Layout() {
-  const router = useRouter();
-  const qc = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-
-  async function signOut() {
-    await qc.cancelQueries();
-    qc.clear();
-    await supabase.auth.signOut();
-    router.navigate({ to: "/auth", replace: true });
-  }
 
   return (
     <div className="min-h-screen flex">
@@ -67,14 +50,8 @@ function Layout() {
             );
           })}
         </nav>
-        <div className="p-3 border-t border-sidebar-border">
-          <Button variant="ghost" size="sm" className="w-full justify-start" onClick={signOut}>
-            <LogOut className="size-4 mr-2" /> Sign out
-          </Button>
-        </div>
       </aside>
       <main className="flex-1 min-w-0">
-        {/* Mobile topbar */}
         <div className="md:hidden flex items-center justify-between p-3 border-b border-border bg-sidebar">
           <div className="flex items-center gap-2">
             <div className="size-8 rounded-md bg-primary grid place-items-center">
@@ -82,9 +59,6 @@ function Layout() {
             </div>
             <span className="font-semibold">PumpOps</span>
           </div>
-          <Button variant="ghost" size="sm" onClick={signOut}>
-            <LogOut className="size-4" />
-          </Button>
         </div>
         <div className="md:hidden overflow-x-auto border-b border-border bg-sidebar">
           <div className="flex gap-1 p-2 min-w-max">
