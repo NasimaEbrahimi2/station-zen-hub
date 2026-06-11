@@ -14,6 +14,137 @@ export type Database = {
   }
   public: {
     Tables: {
+      attendance: {
+        Row: {
+          check_in: string | null
+          check_out: string | null
+          created_at: string
+          employee_id: string
+          id: string
+          notes: string | null
+          work_date: string
+        }
+        Insert: {
+          check_in?: string | null
+          check_out?: string | null
+          created_at?: string
+          employee_id: string
+          id?: string
+          notes?: string | null
+          work_date?: string
+        }
+        Update: {
+          check_in?: string | null
+          check_out?: string | null
+          created_at?: string
+          employee_id?: string
+          id?: string
+          notes?: string | null
+          work_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customers: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string
+          full_name_fa: string | null
+          id: string
+          notes: string | null
+          phone: string | null
+          updated_at: string
+          vehicle_plate: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name: string
+          full_name_fa?: string | null
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+          vehicle_plate?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          full_name_fa?: string | null
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+          vehicle_plate?: string | null
+        }
+        Relationships: []
+      }
+      employees: {
+        Row: {
+          check_in: string | null
+          check_out: string | null
+          created_at: string
+          email: string | null
+          full_name: string
+          full_name_fa: string | null
+          hired_at: string | null
+          id: string
+          notes: string | null
+          phone: string | null
+          position: string | null
+          salary: number
+          salary_pay_day: number | null
+          schedule: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          check_in?: string | null
+          check_out?: string | null
+          created_at?: string
+          email?: string | null
+          full_name: string
+          full_name_fa?: string | null
+          hired_at?: string | null
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          position?: string | null
+          salary?: number
+          salary_pay_day?: number | null
+          schedule?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          check_in?: string | null
+          check_out?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          full_name_fa?: string | null
+          hired_at?: string | null
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          position?: string | null
+          salary?: number
+          salary_pay_day?: number | null
+          schedule?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -106,14 +237,56 @@ export type Database = {
           },
         ]
       }
+      salary_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          employee_id: string
+          id: string
+          notes: string | null
+          pay_date: string
+          period: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          employee_id: string
+          id?: string
+          notes?: string | null
+          pay_date?: string
+          period?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          employee_id?: string
+          id?: string
+          notes?: string | null
+          pay_date?: string
+          period?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salary_payments_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sales: {
         Row: {
           created_at: string
           created_by: string | null
+          customer_id: string | null
           customer_name: string | null
+          fuel_type: string | null
           id: string
           invoice_no: string
           liters: number
+          operator_id: string | null
+          operator_name: string | null
           price_per_liter: number
           pump_after: number
           pump_before: number
@@ -125,10 +298,14 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
+          customer_id?: string | null
           customer_name?: string | null
+          fuel_type?: string | null
           id?: string
           invoice_no?: string
           liters: number
+          operator_id?: string | null
+          operator_name?: string | null
           price_per_liter: number
           pump_after: number
           pump_before: number
@@ -140,10 +317,14 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
+          customer_id?: string | null
           customer_name?: string | null
+          fuel_type?: string | null
           id?: string
           invoice_no?: string
           liters?: number
+          operator_id?: string | null
+          operator_name?: string | null
           price_per_liter?: number
           pump_after?: number
           pump_before?: number
@@ -164,25 +345,43 @@ export type Database = {
       }
       station_config: {
         Row: {
+          arabic_pct: number
+          auto_refill: boolean
           currency: string
           fuel_price: number
+          fuel_type: string
           id: number
+          iranian_pct: number
+          low_threshold: number
+          russian_pct: number
           station_name: string
           tank_capacity: number
           updated_at: string
         }
         Insert: {
+          arabic_pct?: number
+          auto_refill?: boolean
           currency?: string
           fuel_price?: number
+          fuel_type?: string
           id?: number
+          iranian_pct?: number
+          low_threshold?: number
+          russian_pct?: number
           station_name?: string
           tank_capacity?: number
           updated_at?: string
         }
         Update: {
+          arabic_pct?: number
+          auto_refill?: boolean
           currency?: string
           fuel_price?: number
+          fuel_type?: string
           id?: number
+          iranian_pct?: number
+          low_threshold?: number
+          russian_pct?: number
           station_name?: string
           tank_capacity?: number
           updated_at?: string
@@ -309,31 +508,93 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      record_sale: {
-        Args: {
-          _customer_name: string
-          _liters: number
-          _pump_id: string
-          _vehicle_plate: string
-        }
+      record_sale:
+        | {
+            Args: {
+              _customer_name: string
+              _liters: number
+              _pump_id: string
+              _vehicle_plate: string
+            }
+            Returns: {
+              created_at: string
+              created_by: string | null
+              customer_id: string | null
+              customer_name: string | null
+              fuel_type: string | null
+              id: string
+              invoice_no: string
+              liters: number
+              operator_id: string | null
+              operator_name: string | null
+              price_per_liter: number
+              pump_after: number
+              pump_before: number
+              pump_id: string
+              pump_number: number
+              total: number
+              vehicle_plate: string | null
+            }
+            SetofOptions: {
+              from: "*"
+              to: "sales"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
+        | {
+            Args: {
+              _customer_id?: string
+              _customer_name: string
+              _fuel_type?: string
+              _liters: number
+              _operator_id?: string
+              _operator_name?: string
+              _pump_id: string
+              _vehicle_plate: string
+            }
+            Returns: {
+              created_at: string
+              created_by: string | null
+              customer_id: string | null
+              customer_name: string | null
+              fuel_type: string | null
+              id: string
+              invoice_no: string
+              liters: number
+              operator_id: string | null
+              operator_name: string | null
+              price_per_liter: number
+              pump_after: number
+              pump_before: number
+              pump_id: string
+              pump_number: number
+              total: number
+              vehicle_plate: string | null
+            }
+            SetofOptions: {
+              from: "*"
+              to: "sales"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
+      refill_pump_to_full: {
+        Args: { _pump_id: string }
         Returns: {
           created_at: string
           created_by: string | null
-          customer_name: string | null
           id: string
-          invoice_no: string
           liters: number
-          price_per_liter: number
           pump_after: number
           pump_before: number
           pump_id: string
-          pump_number: number
-          total: number
-          vehicle_plate: string | null
+          tank_after: number
+          tank_before: number
         }
         SetofOptions: {
           from: "*"
-          to: "sales"
+          to: "refills"
           isOneToOne: true
           isSetofReturn: false
         }

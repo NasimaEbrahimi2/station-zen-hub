@@ -1,11 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { getOverview, recordSale } from "@/lib/station.functions";
+import { getOverview, listCustomers, listEmployees, recordSale } from "@/lib/station.functions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Fuel } from "lucide-react";
@@ -21,23 +22,32 @@ function SalePage() {
   const qc = useQueryClient();
   const overviewFn = useServerFn(getOverview);
   const saleFn = useServerFn(recordSale);
-  const overview = useQuery({ queryKey: ["overview"], queryFn: () => overviewFn() });
+  const customersFn = useServerFn(listCustomers);
+  const employeesFn = useServerFn(listEmployees);
 
-  const [pumpId, setPumpId] = useState<string>("");
-  const [liters, setLiters] = useState<string>("");
+  const overview = useQuery({ queryKey: ["overview"], queryFn: () => overviewFn() });
+  const customers = useQuery({ queryKey: ["customers"], queryFn: () => customersFn() });
+  const employees = useQuery({ queryKey: ["employees"], queryFn: () => employeesFn() });
+
+  const [pumpId, setPumpId] = useState("");
+  const [liters, setLiters] = useState("");
+  const [customerId, setCustomerId] = useState("");
   const [customer, setCustomer] = useState("");
   const [plate, setPlate] = useState("");
+  const [operatorId, setOperatorId] = useState("");
+  const [fuelType, setFuelType] = useState("");
 
-  const cfg = overview.data?.config;
+  const cfg: any = overview.data?.config;
   const pumps = overview.data?.pumps ?? [];
   const currency = cfg?.currency ?? "USD";
   const price = Number(cfg?.fuel_price ?? 0);
   const litersN = Number(liters || 0);
   const total = litersN * price;
+  const defaultFuel = cfg?.fuel_type ?? "Diesel";
+  const operators: any[] = (employees.data ?? []).filter((e: any) => e.status === "active");
 
   const m = useMutation({
-    mutationFn: (input: { pump_id: string; liters: number; customer_name: string; vehicle_plate: string }) =>
-      saleFn({ data: input }),
+    mutationFn: (input: any) => saleFn({ data: input }),
     onSuccess: (sale: any) => {
       toast.success(`Sale recorded — ${sale.invoice_no}`);
       qc.invalidateQueries();
@@ -50,13 +60,24 @@ function SalePage() {
     e.preventDefault();
     if (!pumpId) return toast.error("Select a pump");
     if (!litersN || litersN <= 0) return toast.error("Enter liters > 0");
-    m.mutate({ pump_id: pumpId, liters: litersN, customer_name: customer, vehicle_plate: plate });
+    const op = operators.find((o) => o.id === operatorId);
+    const cust = (customers.data ?? []).find((c: any) => c.id === customerId);
+    m.mutate({
+      pump_id: pumpId,
+      liters: litersN,
+      customer_name: cust?.full_name ?? customer,
+      vehicle_plate: cust?.vehicle_plate ?? plate,
+      customer_id: customerId || null,
+      operator_name: op?.full_name ?? "",
+      operator_id: operatorId || null,
+      fuel_type: fuelType || defaultFuel,
+    });
   }
 
   return (
     <div className="p-4 md:p-8 max-w-4xl space-y-6">
       <div>
-        <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">New sale</h1>
+        <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">New sale <span className="text-muted-foreground text-lg" dir="rtl">/ فروش جدید</span></h1>
         <p className="text-sm text-muted-foreground mt-1">Record a fuel dispense and generate the invoice.</p>
       </div>
 
@@ -70,18 +91,12 @@ function SalePage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {pumps.map((p) => {
                 const selected = p.id === pumpId;
-                const low = Number(p.current_volume) < 50;
+                const low = Number(p.current_volume) < Number(cfg?.low_threshold ?? 10);
                 return (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => setPumpId(p.id)}
+                  <button key={p.id} type="button" onClick={() => setPumpId(p.id)}
                     className={`rounded-lg border p-4 text-left transition-all ${
-                      selected
-                        ? "border-primary bg-primary/10 glow-amber"
-                        : "border-border bg-card hover:border-primary/50"
-                    }`}
-                  >
+                      selected ? "border-primary bg-primary/10" : "border-border bg-card hover:border-primary/50"
+                    }`}>
                     <div className="flex items-center justify-between">
                       <Fuel className={`size-5 ${selected ? "text-primary" : "text-muted-foreground"}`} />
                       <span className="text-xs uppercase tracking-wider text-muted-foreground">#{p.pump_number}</span>
@@ -96,10 +111,14 @@ function SalePage() {
             </div>
 
             <form onSubmit={submit} className="mt-6 space-y-4">
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="grid sm:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="l">Liters</Label>
-                  <Input id="l" type="number" step="0.01" min="0" value={liters} onChange={(e) => setLiters(e.target.value)} placeholder="0.00" />
+                  <Label>Liters / لیتر</Label>
+                  <Input type="number" step="0.01" min="0" value={liters} onChange={(e) => setLiters(e.target.value)} placeholder="0.00" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Fuel type / نوع سوخت</Label>
+                  <Input value={fuelType} onChange={(e) => setFuelType(e.target.value)} placeholder={defaultFuel} />
                 </div>
                 <div className="space-y-2">
                   <Label>Price per liter</Label>
@@ -108,14 +127,36 @@ function SalePage() {
               </div>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="c">Customer name (optional)</Label>
-                  <Input id="c" value={customer} onChange={(e) => setCustomer(e.target.value)} placeholder="Walk-in" />
+                  <Label>Customer / مشتری</Label>
+                  <Select value={customerId} onValueChange={setCustomerId}>
+                    <SelectTrigger><SelectValue placeholder="Walk-in / select…" /></SelectTrigger>
+                    <SelectContent>
+                      {(customers.data ?? []).map((c: any) => (
+                        <SelectItem key={c.id} value={c.id}>{c.full_name}{c.vehicle_plate ? ` · ${c.vehicle_plate}` : ""}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="pl">Vehicle plate (optional)</Label>
-                  <Input id="pl" value={plate} onChange={(e) => setPlate(e.target.value)} placeholder="ABC-1234" />
+                  <Label>Sales operator / فروشنده</Label>
+                  <Select value={operatorId} onValueChange={setOperatorId}>
+                    <SelectTrigger><SelectValue placeholder="Select operator…" /></SelectTrigger>
+                    <SelectContent>
+                      {operators.map((o) => (
+                        <SelectItem key={o.id} value={o.id}>{o.full_name}{o.position ? ` · ${o.position}` : ""}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
+              {!customerId && (
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2"><Label>Customer name (walk-in)</Label>
+                    <Input value={customer} onChange={(e) => setCustomer(e.target.value)} placeholder="Walk-in" /></div>
+                  <div className="space-y-2"><Label>Vehicle plate</Label>
+                    <Input value={plate} onChange={(e) => setPlate(e.target.value)} placeholder="ABC-1234" /></div>
+                </div>
+              )}
               <Button type="submit" disabled={m.isPending || !pumpId || !litersN} className="w-full sm:w-auto">
                 {m.isPending ? "Recording…" : "Record sale & generate invoice"}
               </Button>
@@ -127,10 +168,11 @@ function SalePage() {
           <CardHeader><CardTitle>Summary</CardTitle></CardHeader>
           <CardContent className="space-y-3">
             <Row k="Pump" v={pumpId ? `Pump ${pumps.find((p) => p.id === pumpId)?.pump_number}` : "—"} />
+            <Row k="Fuel type" v={fuelType || defaultFuel} />
             <Row k="Liters" v={litersN ? fmtLiters(litersN) : "—"} />
             <Row k="Price / L" v={fmtMoney(price, currency)} />
             <div className="border-t border-border pt-3 flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Total</span>
+              <span className="text-sm text-muted-foreground">Grand total</span>
               <span className="text-2xl font-semibold font-mono tabular text-primary">{fmtMoney(total, currency)}</span>
             </div>
           </CardContent>
