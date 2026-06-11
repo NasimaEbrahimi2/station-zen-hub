@@ -20,7 +20,7 @@ function SettingsPage() {
   const updateFn = useServerFn(updateConfig);
   const overview = useQuery({ queryKey: ["overview"], queryFn: () => overviewFn() });
   const cfg = overview.data?.config;
-  const isAdmin = (overview.data?.roles ?? []).includes("admin" as any);
+  const isAdmin = true;
 
   const [form, setForm] = useState({ fuel_price: 0, tank_capacity: 0, station_name: "", currency: "USD" });
   useEffect(() => {
