@@ -9,6 +9,19 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { LanguageSwitcher, useI18n } from "@/lib/i18n";
+
+function LanguageToggle() {
+  const { lang } = useI18n();
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <div className="text-sm text-muted-foreground">
+        {lang === "fa" ? "زبان فعلی: فارسی (دری)" : "Current language: English"}
+      </div>
+      <LanguageSwitcher />
+    </div>
+  );
+}
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Settings — PumpOps" }] }),
@@ -72,6 +85,16 @@ function SettingsPage() {
         <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">Settings <span className="text-muted-foreground text-lg" dir="rtl">/ تنظیمات</span></h1>
         <p className="text-sm text-muted-foreground mt-1">Station configuration, refill rules, and fuel origin blend.</p>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Language / زبان</CardTitle>
+          <CardDescription>Switch the interface between English and Persian (Dari). / تغییر زبان رابط کاربری بین انگلیسی و فارسی (دری).</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <LanguageToggle />
+        </CardContent>
+      </Card>
 
       <form onSubmit={submit} className="space-y-6">
         <Card>
