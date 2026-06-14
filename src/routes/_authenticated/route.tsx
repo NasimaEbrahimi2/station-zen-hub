@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, Link, useRouterState } from "@tanstack/react-router";
-import { Fuel, LayoutDashboard, Receipt, Fuel as PumpIcon, Truck, BarChart3, Settings, FileText, Users, UserCog } from "lucide-react";
+import { Fuel, LayoutDashboard, Receipt, Fuel as PumpIcon, Truck, BarChart3, Settings, FileText, Users, UserCog, Calculator, BookOpen, Building2, Wallet } from "lucide-react";
 import { LanguageSwitcher, useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -10,12 +10,16 @@ export const Route = createFileRoute("/_authenticated")({
 const NAV = [
   { to: "/dashboard", en: "Dashboard", fa: "داشبورد", icon: LayoutDashboard },
   { to: "/sale", en: "New Sale", fa: "فروش جدید", icon: Receipt },
+  { to: "/invoices", en: "Invoices", fa: "فاکتورها", icon: FileText },
+  { to: "/expenses", en: "Expenses", fa: "هزینه‌ها", icon: Wallet },
+  { to: "/vendors", en: "Vendors", fa: "تأمین‌کنندگان", icon: Building2 },
+  { to: "/customers", en: "Customers", fa: "مشتریان", icon: Users },
+  { to: "/accounting", en: "Accounting", fa: "حسابداری", icon: Calculator },
+  { to: "/accounts", en: "Chart of Accounts", fa: "دفتر حساب‌ها", icon: BookOpen },
   { to: "/pumps", en: "Pumps", fa: "پمپ‌ها", icon: PumpIcon },
   { to: "/inventory", en: "Inventory / Purchases", fa: "خرید سوخت", icon: Truck },
-  { to: "/customers", en: "Customers", fa: "مشتریان", icon: Users },
   { to: "/employees", en: "Employees", fa: "کارمندان", icon: UserCog },
   { to: "/reports", en: "Reports", fa: "گزارش‌ها", icon: BarChart3 },
-  { to: "/invoices", en: "Invoices", fa: "فاکتورها", icon: FileText },
   { to: "/settings", en: "Settings", fa: "تنظیمات", icon: Settings },
 ] as const;
 
