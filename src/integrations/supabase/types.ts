@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      accounts: {
+        Row: {
+          balance: number
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          is_system: boolean
+          name: string
+          subtype: string | null
+          type: Database["public"]["Enums"]["account_type"]
+          updated_at: string
+        }
+        Insert: {
+          balance?: number
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_system?: boolean
+          name: string
+          subtype?: string | null
+          type: Database["public"]["Enums"]["account_type"]
+          updated_at?: string
+        }
+        Update: {
+          balance?: number
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_system?: boolean
+          name?: string
+          subtype?: string | null
+          type?: Database["public"]["Enums"]["account_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       attendance: {
         Row: {
           check_in: string | null
@@ -144,6 +186,167 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      expenses: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          expense_account_id: string
+          expense_date: string
+          expense_no: number
+          id: string
+          journal_entry_id: string | null
+          memo: string | null
+          payment_account_id: string
+          reference: string | null
+          vendor_id: string | null
+          vendor_name: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          expense_account_id: string
+          expense_date?: string
+          expense_no?: number
+          id?: string
+          journal_entry_id?: string | null
+          memo?: string | null
+          payment_account_id: string
+          reference?: string | null
+          vendor_id?: string | null
+          vendor_name?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          expense_account_id?: string
+          expense_date?: string
+          expense_no?: number
+          id?: string
+          journal_entry_id?: string | null
+          memo?: string | null
+          payment_account_id?: string
+          reference?: string | null
+          vendor_id?: string | null
+          vendor_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_expense_account_id_fkey"
+            columns: ["expense_account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_journal_entry_id_fkey"
+            columns: ["journal_entry_id"]
+            isOneToOne: false
+            referencedRelation: "journal_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_payment_account_id_fkey"
+            columns: ["payment_account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      journal_entries: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          entry_date: string
+          entry_no: number
+          id: string
+          memo: string | null
+          reference: string | null
+          source_id: string | null
+          source_type: string | null
+          total: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          entry_date?: string
+          entry_no?: number
+          id?: string
+          memo?: string | null
+          reference?: string | null
+          source_id?: string | null
+          source_type?: string | null
+          total?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          entry_date?: string
+          entry_no?: number
+          id?: string
+          memo?: string | null
+          reference?: string | null
+          source_id?: string | null
+          source_type?: string | null
+          total?: number
+        }
+        Relationships: []
+      }
+      journal_lines: {
+        Row: {
+          account_id: string
+          created_at: string
+          credit: number
+          debit: number
+          description: string | null
+          entry_id: string
+          id: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          credit?: number
+          debit?: number
+          description?: string | null
+          entry_id: string
+          id?: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          credit?: number
+          debit?: number
+          description?: string | null
+          entry_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journal_lines_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "journal_lines_entry_id_fkey"
+            columns: ["entry_id"]
+            isOneToOne: false
+            referencedRelation: "journal_entries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -457,6 +660,51 @@ export type Database = {
         }
         Relationships: []
       }
+      vendors: {
+        Row: {
+          address: string | null
+          balance: number
+          contact_name: string | null
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          phone: string | null
+          tax_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          balance?: number
+          contact_name?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          phone?: string | null
+          tax_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          balance?: number
+          contact_name?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          tax_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -468,6 +716,17 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      post_journal_entry: {
+        Args: {
+          _entry_date: string
+          _lines: Json
+          _memo: string
+          _reference: string
+          _source_id: string
+          _source_type: string
+        }
+        Returns: string
       }
       record_delivery: {
         Args: { _cost: number; _liters: number; _supplier: string }
@@ -484,6 +743,39 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "tank_deliveries"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      record_expense: {
+        Args: {
+          _amount: number
+          _expense_account_id: string
+          _expense_date: string
+          _memo: string
+          _payment_account_id: string
+          _reference: string
+          _vendor_id: string
+          _vendor_name: string
+        }
+        Returns: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          expense_account_id: string
+          expense_date: string
+          expense_no: number
+          id: string
+          journal_entry_id: string | null
+          memo: string | null
+          payment_account_id: string
+          reference: string | null
+          vendor_id: string | null
+          vendor_name: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "expenses"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -601,6 +893,7 @@ export type Database = {
       }
     }
     Enums: {
+      account_type: "asset" | "liability" | "equity" | "income" | "expense"
       app_role: "admin" | "staff"
     }
     CompositeTypes: {
@@ -729,6 +1022,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      account_type: ["asset", "liability", "equity", "income", "expense"],
       app_role: ["admin", "staff"],
     },
   },
