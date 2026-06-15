@@ -1,6 +1,7 @@
-import { createFileRoute, Outlet, Link, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, Outlet, Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { Fuel, LayoutDashboard, Receipt, Fuel as PumpIcon, Truck, BarChart3, Settings, FileText, Users, UserCog, Calculator, BookOpen, Building2, Wallet } from "lucide-react";
-import { LanguageSwitcher, useI18n } from "@/lib/i18n";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -8,43 +9,68 @@ export const Route = createFileRoute("/_authenticated")({
 });
 
 const NAV = [
-  { to: "/dashboard", en: "Dashboard", fa: "داشبورد", icon: LayoutDashboard },
-  { to: "/sale", en: "New Sale", fa: "فروش جدید", icon: Receipt },
-  { to: "/invoices", en: "Invoices", fa: "فاکتورها", icon: FileText },
-  { to: "/expenses", en: "Expenses", fa: "هزینه‌ها", icon: Wallet },
-  { to: "/vendors", en: "Vendors", fa: "تأمین‌کنندگان", icon: Building2 },
-  { to: "/customers", en: "Customers", fa: "مشتریان", icon: Users },
-  { to: "/accounting", en: "Accounting", fa: "حسابداری", icon: Calculator },
-  { to: "/accounts", en: "Chart of Accounts", fa: "دفتر حساب‌ها", icon: BookOpen },
-  { to: "/pumps", en: "Pumps", fa: "پمپ‌ها", icon: PumpIcon },
-  { to: "/inventory", en: "Inventory / Purchases", fa: "خرید سوخت", icon: Truck },
-  { to: "/employees", en: "Employees", fa: "کارمندان", icon: UserCog },
-  { to: "/reports", en: "Reports", fa: "گزارش‌ها", icon: BarChart3 },
-  { to: "/settings", en: "Settings", fa: "تنظیمات", icon: Settings },
+  { to: "/dashboard", label: "داشبورد", icon: LayoutDashboard },
+  { to: "/sale", label: "فروش جدید", icon: Receipt },
+  { to: "/invoices", label: "فاکتورها", icon: FileText },
+  { to: "/expenses", label: "مصارف", icon: Wallet },
+  { to: "/vendors", label: "تأمین‌کنندگان", icon: Building2 },
+  { to: "/customers", label: "مشتریان", icon: Users },
+  { to: "/accounting", label: "حسابداری", icon: Calculator },
+  { to: "/accounts", label: "دفتر حساب‌ها", icon: BookOpen },
+  { to: "/pumps", label: "پمپ‌ها", icon: PumpIcon },
+  { to: "/inventory", label: "خرید سوخت", icon: Truck },
+  { to: "/employees", label: "کارمندان", icon: UserCog },
+  { to: "/reports", label: "گزارش‌ها", icon: BarChart3 },
+  { to: "/settings", label: "تنظیمات", icon: Settings },
 ] as const;
 
 function Layout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const company = typeof window !== "undefined" ? localStorage.getItem("company_name") : null;
-  const { lang, t } = useI18n();
+  const navigate = useNavigate();
+  const [company, setCompany] = useState<{ name: string; logo_url: string | null } | null>(null);
+  const [checked, setChecked] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("company_profile")
+        .select("name, logo_url")
+        .maybeSingle();
+      if (!data) {
+        navigate({ to: "/onboarding/company", replace: true });
+        return;
+      }
+      setCompany(data as any);
+      setChecked(true);
+    })();
+  }, [navigate]);
+
+  if (!checked) {
+    return (
+      <div className="min-h-screen grid place-items-center bg-background" dir="rtl">
+        <p className="text-sm text-muted-foreground">در حال بارگذاری…</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen flex">
-      <aside className="hidden md:flex w-64 shrink-0 flex-col bg-sidebar border-r border-sidebar-border">
+    <div className="min-h-screen flex" dir="rtl">
+      <aside className="hidden md:flex w-64 shrink-0 flex-col bg-sidebar border-l border-sidebar-border">
         <div className="px-5 py-5 flex items-center gap-2 border-b border-sidebar-border">
-          <div className="size-9 rounded-md bg-primary grid place-items-center shrink-0">
-            <Fuel className="size-4 text-primary-foreground" />
-          </div>
+          {company?.logo_url ? (
+            <img src={company.logo_url} alt="logo" className="size-9 rounded-md object-cover shrink-0" />
+          ) : (
+            <div className="size-9 rounded-md bg-primary grid place-items-center shrink-0">
+              <Fuel className="size-4 text-primary-foreground" />
+            </div>
+          )}
           <div className="min-w-0 flex-1">
-            <p className="font-semibold tracking-tight leading-none truncate">{company || "PumpOps"}</p>
-            <p className="text-[11px] text-muted-foreground mt-1">{t("Station Console", "کنسول جایگاه")}</p>
+            <p className="font-semibold tracking-tight leading-none truncate">{company?.name || "جایگاه سوخت"}</p>
+            <p className="text-[11px] text-muted-foreground mt-1">سیستم مدیریت پمپ بنزین</p>
           </div>
-        </div>
-        <div className="px-3 pt-3">
-          <LanguageSwitcher className="w-full justify-center" />
         </div>
         <nav className="flex-1 p-3 space-y-1">
-          {NAV.map(({ to, en, fa, icon: Icon }) => {
+          {NAV.map(({ to, label, icon: Icon }) => {
             const active = pathname === to || pathname.startsWith(to + "/");
             return (
               <Link
@@ -57,25 +83,26 @@ function Layout() {
                 }`}
               >
                 <Icon className="size-4 shrink-0" />
-                <span className="flex-1 truncate">{lang === "fa" ? fa : en}</span>
+                <span className="flex-1 truncate">{label}</span>
               </Link>
             );
           })}
         </nav>
       </aside>
       <main className="flex-1 min-w-0">
-        <div className="md:hidden grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 p-3 border-b border-border bg-sidebar">
-          <div className="flex min-w-0 items-center gap-2">
+        <div className="md:hidden flex items-center gap-2 p-3 border-b border-border bg-sidebar">
+          {company?.logo_url ? (
+            <img src={company.logo_url} alt="logo" className="size-8 rounded-md object-cover shrink-0" />
+          ) : (
             <div className="size-8 rounded-md bg-primary grid place-items-center shrink-0">
               <Fuel className="size-4 text-primary-foreground" />
             </div>
-            <span className="font-semibold truncate">{company || "PumpOps"}</span>
-          </div>
-          <LanguageSwitcher />
+          )}
+          <span className="font-semibold truncate">{company?.name || "جایگاه سوخت"}</span>
         </div>
         <div className="md:hidden overflow-x-auto border-b border-border bg-sidebar">
           <div className="flex gap-1 p-2 min-w-max">
-            {NAV.map(({ to, en, fa, icon: Icon }) => {
+            {NAV.map(({ to, label, icon: Icon }) => {
               const active = pathname === to || pathname.startsWith(to + "/");
               return (
                 <Link
@@ -86,7 +113,7 @@ function Layout() {
                   }`}
                 >
                   <Icon className="size-3.5" />
-                  {lang === "fa" ? fa : en}
+                  {label}
                 </Link>
               );
             })}

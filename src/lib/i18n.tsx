@@ -1,40 +1,33 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, type ReactNode } from "react";
 
-export type Lang = "en" | "fa";
+export type Lang = "fa";
 
 type Ctx = {
   lang: Lang;
   setLang: (l: Lang) => void;
   t: (en: string, fa: string) => string;
-  dir: "ltr" | "rtl";
+  dir: "rtl";
 };
 
 const I18nContext = createContext<Ctx | null>(null);
 
+/**
+ * Application is locked to Persian (Dari) with RTL layout.
+ * The `t(en, fa)` helper and `LanguageSwitcher` are kept as no-ops for
+ * backward compatibility with existing call sites.
+ */
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>("en");
-
-  useEffect(() => {
-    const saved = (typeof window !== "undefined" && localStorage.getItem("lang")) as Lang | null;
-    if (saved === "en" || saved === "fa") setLangState(saved);
-  }, []);
-
   useEffect(() => {
     if (typeof document === "undefined") return;
-    document.documentElement.lang = lang;
-    document.documentElement.dir = lang === "fa" ? "rtl" : "ltr";
-  }, [lang]);
-
-  function setLang(l: Lang) {
-    setLangState(l);
-    try { localStorage.setItem("lang", l); } catch {}
-  }
+    document.documentElement.lang = "fa";
+    document.documentElement.dir = "rtl";
+  }, []);
 
   const value: Ctx = {
-    lang,
-    setLang,
-    t: (en, fa) => (lang === "fa" ? fa : en),
-    dir: lang === "fa" ? "rtl" : "ltr",
+    lang: "fa",
+    setLang: () => {},
+    t: (_en, fa) => fa,
+    dir: "rtl",
   };
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
@@ -46,24 +39,7 @@ export function useI18n() {
   return ctx;
 }
 
-export function LanguageSwitcher({ className = "" }: { className?: string }) {
-  const { lang, setLang } = useI18n();
-  return (
-    <div className={`inline-flex rounded-md border border-border bg-background p-0.5 text-xs ${className}`}>
-      <button
-        type="button"
-        onClick={() => setLang("en")}
-        className={`px-2 py-1 rounded ${lang === "en" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
-      >
-        EN
-      </button>
-      <button
-        type="button"
-        onClick={() => setLang("fa")}
-        className={`px-2 py-1 rounded ${lang === "fa" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
-      >
-        فا
-      </button>
-    </div>
-  );
+/** Kept as a no-op render so older imports do not break. */
+export function LanguageSwitcher(_: { className?: string }) {
+  return null;
 }
