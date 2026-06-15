@@ -94,6 +94,51 @@ export type Database = {
           },
         ]
       }
+      company_profile: {
+        Row: {
+          address: string | null
+          created_at: string
+          currency: string
+          email: string | null
+          id: number
+          logo_url: string | null
+          name: string
+          owner_name: string | null
+          phone: string | null
+          tax_id: string | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          currency?: string
+          email?: string | null
+          id?: number
+          logo_url?: string | null
+          name: string
+          owner_name?: string | null
+          phone?: string | null
+          tax_id?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          currency?: string
+          email?: string | null
+          id?: number
+          logo_url?: string | null
+          name?: string
+          owner_name?: string | null
+          phone?: string | null
+          tax_id?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           created_at: string
