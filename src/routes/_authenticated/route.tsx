@@ -2,6 +2,7 @@ import { createFileRoute, Outlet, Link, useRouterState, useNavigate } from "@tan
 import { Fuel, LayoutDashboard, Receipt, Fuel as PumpIcon, Truck, BarChart3, Settings, FileText, Users, UserCog, Calculator, BookOpen, Building2, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { ThemeToggle } from "@/lib/theme";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -88,6 +89,9 @@ function Layout() {
             );
           })}
         </nav>
+        <div className="p-3 border-t border-sidebar-border">
+          <ThemeToggle className="w-full justify-center" />
+        </div>
       </aside>
       <main className="flex-1 min-w-0">
         <div className="md:hidden flex items-center gap-2 p-3 border-b border-border bg-sidebar">
@@ -98,7 +102,8 @@ function Layout() {
               <Fuel className="size-4 text-primary-foreground" />
             </div>
           )}
-          <span className="font-semibold truncate">{company?.name || "جایگاه سوخت"}</span>
+          <span className="font-semibold truncate flex-1">{company?.name || "جایگاه سوخت"}</span>
+          <ThemeToggle />
         </div>
         <div className="md:hidden overflow-x-auto border-b border-border bg-sidebar">
           <div className="flex gap-1 p-2 min-w-max">
